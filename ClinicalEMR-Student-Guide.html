@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClinicalEMR Pro — Student Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --primary:#0f4c81; --primary-light:#1a6bb5; --accent:#00b4d8; --green:#06d6a0; --bg:#f0f4f8; --border:#d1dce8; --text:#1a2b3c; --text2:#4a6080; --text3:#8099b3; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'IBM Plex Sans',sans-serif; background:var(--bg); color:var(--text); font-size:14px; line-height:1.7; }
+  .page { width:850px; margin:32px auto; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,.1); }
+  .cover { background:linear-gradient(135deg,#047857 0%,#065f46 60%,#064e3b 100%); padding:60px 56px; color:#fff; position:relative; overflow:hidden; }
+  .cover::after { content:''; position:absolute; right:-60px; top:-60px; width:320px; height:320px; border-radius:50%; background:rgba(255,255,255,.04); }
+  .cover-tag { font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#6ee7b7; margin-bottom:16px; }
+  .cover h1 { font-size:36px; font-weight:700; line-height:1.15; margin-bottom:10px; }
+  .cover h1 span { color:#6ee7b7; }
+  .cover .subtitle { font-size:16px; color:rgba(255,255,255,.75); margin-bottom:32px; font-weight:300; }
+  .cover-meta { display:flex; gap:32px; flex-wrap:wrap; padding-top:24px; border-top:1px solid rgba(255,255,255,.15); }
+  .cover-meta-item { font-size:12px; color:rgba(255,255,255,.6); }
+  .cover-meta-item strong { display:block; color:#fff; font-size:14px; }
+  .body strong { display:inline; font-weight:700; }
+  .body { padding:48px 56px; }
+  .sh { display:flex; align-items:center; gap:12px; margin:40px 0 18px; padding-bottom:12px; border-bottom:2px solid var(--border); }
+  .sh:first-child { margin-top:0; }
+  .si { width:36px; height:36px; border-radius:8px; background:#047857; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; }
+  .si.p { background:var(--primary); }
+  .sh h2 { font-size:20px; font-weight:700; color:#047857; }
+  .lbl { margin-left:auto; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:3px 10px; border-radius:20px; background:#d4f8ed; color:#047857; }
+  h3 { font-size:15px; font-weight:700; color:var(--primary); margin:24px 0 8px; }
+  h4 { font-size:13px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; margin:16px 0 6px; }
+  p { margin-bottom:10px; }
+  .co { border-radius:8px; padding:14px 18px; margin:16px 0; border-left:4px solid; }
+  .co.b { background:#eff6ff; border-color:var(--primary-light); }
+  .co.g { background:#f0fdf4; border-color:var(--green); }
+  .co.r { background:#fff1f2; border-color:#ef476f; }
+  .ct { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
+  .co.b .ct { color:var(--primary); } .co.g .ct { color:#047857; } .co.r .ct { color:#9f1239; }
+  ol.steps { list-style:none; counter-reset:s; margin:12px 0; }
+  ol.steps li { counter-increment:s; display:flex; gap:14px; align-items:flex-start; margin-bottom:10px; }
+  ol.steps li span { display:block; flex:1; }
+  ol.steps li::before { content:counter(s); min-width:26px; height:26px; border-radius:50%; background:#047857; color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+  ul.b { list-style:none; margin:8px 0 12px; }
+  ul.b li { padding:4px 0 4px 20px; position:relative; }
+  ul.b li::before { content:'→'; position:absolute; left:0; color:#047857; font-weight:700; }
+  table { width:100%; border-collapse:collapse; margin:14px 0; }
+  thead th { background:#047857; color:#fff; padding:10px 12px; text-align:left; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; }
+  tbody td { padding:9px 12px; border-bottom:1px solid var(--border); font-size:13px; }
+  tbody tr:last-child td { border-bottom:none; }
+  tbody tr:nth-child(even) td { background:#f8fafc; }
+  code { font-family:'IBM Plex Mono',monospace; background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:12px; color:var(--primary); }
+  .tip-box { border:1px solid var(--border); border-radius:8px; padding:14px 18px; background:#f8fafc; margin:14px 0; }
+  .tip-box-title { font-size:12px; font-weight:700; color:#047857; text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
+  .nav-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+  .nav-item { border:1px solid var(--border); border-radius:8px; padding:12px 14px; background:#f8fafc; }
+  .nav-item-title { font-size:13px; font-weight:700; color:var(--primary); margin-bottom:4px; }
+  .nav-item p { font-size:12px; margin-bottom:0; color:var(--text2); }
+  .div { height:1px; background:var(--border); margin:32px 0; }
+  .pb { page-break-before:always; }
+  .footer { background:#047857; color:rgba(255,255,255,.7); padding:20px 56px; font-size:12px; display:flex; justify-content:space-between; align-items:center; }
+  .footer strong { color:#fff; }
+  @media print { body{background:#fff;} .page{margin:0;border-radius:0;box-shadow:none;width:100%;} .pb{page-break-before:always;} }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="cover">
+    <div class="cover-tag">Clinical Education Resource — Student Guide</div>
+    <h1>Clinical<span>EMR</span> Pro</h1>
+    <div class="subtitle">Student User Guide — Electronic Medical Record Simulation</div>
+    <div class="cover-meta">
+      <div class="cover-meta-item"><strong>Format</strong>Hosted Website — No Download Needed</div>
+      <div class="cover-meta-item"><strong>Access</strong>Open the link in Chrome or Edge</div>
+      <div class="cover-meta-item"><strong>Submission</strong>Print to PDF before closing</div>
+      <div class="cover-meta-item"><strong>Publisher</strong>HealthSim Hub · © 2025</div>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <div class="sh">
+      <div class="si">📋</div>
+      <h2>Before You Begin</h2>
+      <span class="lbl">Read First</span>
+    </div>
+
+    <div class="co r">
+      <div class="ct">⚠ Important — Your Work Will Not Be Saved Automatically</div>
+      This simulation runs in your browser and <strong>does not save your work</strong> when you close the tab or refresh the page. Before you finish, click the <strong>🖨 Print</strong> button in the top right corner of the simulation to save your completed patient record as a PDF. Submit that PDF to your instructor.
+    </div>
+
+    <p>ClinicalEMR Pro is a clinical simulation that works like a real Electronic Medical Record system. You will use it to practice documenting a patient encounter from start to finish — checking the patient in, entering clinical information, placing orders, performing lab procedures, documenting the visit, adding charges, and processing checkout.</p>
+
+    <p>You will need your <strong>patient card</strong> (provided by your instructor) to complete this activity. Your patient card contains the information you will enter into the EMR throughout the session.</p>
+
+    <div class="div"></div>
+
+    <div class="sh">
+      <div class="si">🚀</div>
+      <h2>Getting Started</h2>
+      <span class="lbl">Step by Step</span>
+    </div>
+
+    <ol class="steps">
+      <li><span>Open the simulation website link provided by your instructor. Use <strong>Google Chrome or Microsoft Edge</strong> for best results.</span></li>
+      <li><span>At the top of the screen, click the <strong>patient dropdown</strong> and select your assigned patient by name.</span></li>
+      <li><span>Navigate to <strong>Patient Details</strong> in the left sidebar and verify that the information shown matches your patient card.</span></li>
+      <li><span>Click <strong>Check In</strong> in the left sidebar to begin the encounter.</span></li>
+      <li><span>Work through each section assigned by your instructor using the <strong>left sidebar</strong> to navigate. Your entries are saved as you move between sections.</span></li>
+      <li><span>When you have completed all assigned sections, click <strong>🖨 Print</strong> in the top right corner, select <strong>Save as PDF</strong>, and save your file before submitting.</span></li>
+    </ol>
+
+    <div class="co b">
+      <div class="ct">💡 Tip — Chrome Works Best for Printing</div>
+      When saving your record as a PDF, use Google Chrome or Microsoft Edge. In the print dialog, click <strong>More settings</strong> and enable <strong>Background graphics</strong> to preserve the color formatting of the printed chart.
+    </div>
+
+    <div class="div"></div>
+
+    <div class="sh">
+      <div class="si p">🗂</div>
+      <h2>Sidebar Navigation</h2>
+      <span class="lbl">Reference</span>
+    </div>
+
+    <p>All sections of the patient chart are accessible from the sidebar on the left side of the screen. Click any section name to go directly to it. Your work is automatically retained as you navigate between sections during your session.</p>
+
+    <div class="nav-grid">
+      <div class="nav-item">
+        <div class="nav-item-title">👤 Patient Details</div>
+        <p>View and verify patient demographics, insurance information, and contact details.</p>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-title">📋 Visit History</div>
+        <p>Review the patient's previous visits and past encounter history.</p>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-title">⚕ Problem List</div>
+        <p>View active diagnoses; add new problems using ICD-10 codes.</p>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-title">💓 Vital Signs</div>
+        <p>Enter current vital signs and view the patient's vitals history.</p>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-title">💊 Allergies &amp; Medications</div>
+        <p>Review known allergies and current medications; add or remove entries.</p>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-title">📝 Clinical Notes</div>
+        <p>Write clinical notes (SOAP, Progress, Nursing, etc.); edit or delete existing notes.</p>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-title">📋 Orders &amp; Workflow</div>
+        <p>Place orders for labs, imaging, or procedures; advance orders through the status workflow.</p>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-title">🔬 Results</div>
+        <p>View all completed results in one place — from orders and from lab procedures.</p>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-title">🧪 Labs &amp; Procedures</div>
+        <p>Perform point-of-care tests; manually enter results for any other test or study.</p>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-title">📅 Appointments</div>
+        <p>Schedule follow-up appointments; view or cancel existing appointments.</p>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-title">📄 Encounter Form</div>
+        <p>Document the chief complaint, HPI, Review of Systems, Physical Exam, and A&amp;P.</p>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-title">✅ Requisitions</div>
+        <p>Track encounter tasks with a checklist; mark items complete as you go.</p>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-title">💰 Visit Charges</div>
+        <p>Add CPT charges from the list or enter codes manually; view running total.</p>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-title">🏁 Checkout</div>
+        <p>Review the billing breakdown and process the patient's payment.</p>
+      </div>
+    </div>
+
+    <div class="pb"></div>
+
+    <div class="sh" style="margin-top:0">
+      <div class="si">📖</div>
+      <h2>Step-by-Step Workflows</h2>
+      <span class="lbl">How-To</span>
+    </div>
+
+    <h3>Recording Vital Signs</h3>
+    <ol class="steps">
+      <li><span>Click <strong>Vital Signs</strong> in the sidebar.</span></li>
+      <li><span>Enter the values from your patient card into the fields: temperature, blood pressure, heart rate, respiratory rate, weight, and O2 saturation.</span></li>
+      <li><span>Click <strong>💾 Save Vitals</strong>. The entry will appear in the history table below.</span></li>
+    </ol>
+
+    <h3>Writing a Clinical Note</h3>
+    <ol class="steps">
+      <li><span>Click <strong>Clinical Notes</strong> in the sidebar.</span></li>
+      <li><span>Select the note type from the dropdown (e.g., SOAP Note, Progress Note).</span></li>
+      <li><span>Enter the provider name and write your note in the text area.</span></li>
+      <li><span>Click <strong>💾 Save Note</strong>. The note appears below with the date and provider stamped automatically.</span></li>
+      <li><span>Made a mistake? Click <strong>✏ Edit</strong> on any saved note to update the provider, type, or content.</span></li>
+    </ol>
+
+    <h3>Placing and Completing an Order</h3>
+    <ol class="steps">
+      <li><span>Click <strong>Orders &amp; Workflow</strong> in the sidebar.</span></li>
+      <li><span>Select the order type, enter the order details, and choose a priority level.</span></li>
+      <li><span>Click <strong>+ Create Order</strong>. The order appears with a <strong>Pending</strong> status.</span></li>
+      <li><span>Click <strong>▶ Start</strong> to advance it to <strong>In Progress</strong>.</span></li>
+      <li><span>When the order is complete, click <strong>✓ Mark Done</strong>. A result entry box will appear — type in the result or findings, then click <strong>Confirm Complete</strong>.</span></li>
+      <li><span>The completed order and its result will automatically appear in the <strong>Results</strong> section.</span></li>
+    </ol>
+
+    <h3>Performing a Lab Procedure</h3>
+    <ol class="steps">
+      <li><span>Click <strong>Labs &amp; Procedures</strong> in the sidebar.</span></li>
+      <li><span>Select the test type from the dropdown: <strong>Urinalysis</strong>, <strong>Pregnancy Test (hCG)</strong>, or <strong>Point-of-Care Glucose</strong>.</span></li>
+      <li><span>Fill in the result fields and enter the provider or tech name.</span></li>
+      <li><span>Click <strong>💾 Save Results</strong>. A clinical interpretation will appear automatically where applicable (e.g., a critical low alert for glucose below 70 mg/dL).</span></li>
+      <li><span>For any other test not listed — such as an EKG, spirometry, or imaging read — use the <strong>Manual Result Entry</strong> card below. Select the type, enter the name of the test, type your findings, and save.</span></li>
+      <li><span>All saved results appear in the <strong>Labs &amp; Procedures</strong> history and in the <strong>Results</strong> section.</span></li>
+    </ol>
+
+    <h3>Adding Visit Charges</h3>
+    <ol class="steps">
+      <li><span>Click <strong>Visit Charges</strong> in the sidebar.</span></li>
+      <li><span>To use a pre-loaded code: select a CPT code from the dropdown — the description and dollar amount will fill in automatically. Click <strong>+ Add Charge</strong>.</span></li>
+      <li><span>To enter a code not on the list: use the <strong>Manual Entry</strong> card. Select the code type (CPT, ICD-10, HCPCS, or Other), type the code and description, enter the amount, and click <strong>+ Add Manual Charge</strong>.</span></li>
+      <li><span>All charges appear in the summary table with a running total at the bottom.</span></li>
+    </ol>
+
+    <h3>Checkout &amp; Billing</h3>
+    <ol class="steps">
+      <li><span>Click <strong>Checkout</strong> in the sidebar.</span></li>
+      <li><span>Review the automatic billing summary. The system calculates the deductible applied, insurance share (80%), patient base responsibility, copay, and 8% tax.</span></li>
+      <li><span>Select a payment method and click <strong>💳 Complete Payment</strong>.</span></li>
+      <li><span>A confirmation receipt will appear. Click <strong>Check Out Patient</strong> to complete the encounter.</span></li>
+    </ol>
+
+    <h3>Completing the Encounter Form</h3>
+    <ol class="steps">
+      <li><span>Click <strong>Encounter Form</strong> in the sidebar.</span></li>
+      <li><span>Enter the <strong>Chief Complaint</strong> and <strong>History of Present Illness</strong> based on your patient card.</span></li>
+      <li><span>Work through the <strong>Review of Systems</strong> — check the box next to each symptom that applies to your patient's scenario.</span></li>
+      <li><span>Complete the <strong>Physical Exam</strong> section in the same way — check findings that apply.</span></li>
+      <li><span>Write your <strong>Assessment &amp; Plan</strong> in the text area at the bottom.</span></li>
+      <li><span>Click <strong>💾 Save Encounter</strong>.</span></li>
+    </ol>
+
+    <h3>Using the Pediatric Encounter Form</h3>
+    <p>If you are assigned <strong>Ethan Morales</strong>, <strong>Lily Chen</strong>, or <strong>Jamal Robinson</strong>, the Encounter Form works differently than for adult patients. Here is what to expect.</p>
+    <ol class="steps">
+      <li><span>Click <strong>Encounter Form</strong> in the sidebar. You will see two tabs at the top: <strong>📋 Standard Encounter</strong> and <strong>🩺 Pediatric Encounter</strong>. The Pediatric tab will be selected automatically for your patient.</span></li>
+      <li><span>Notice the blue banner at the top of the form — it shows your patient's name, age, and visit type (Pediatric or Adolescent) so you can confirm you are in the right form.</span></li>
+      <li><span>Complete the <strong>Chief Complaint &amp; Reason for Visit</strong> section. Select the visit type from the dropdown and fill in the HPI and any parent or guardian concerns noted on your patient card.</span></li>
+      <li><span>In <strong>Growth &amp; Development</strong>, enter the height, weight, and BMI percentiles from your patient card. The BMI category label will appear automatically. Select the growth trend that applies and check off the developmental milestones that have been met — the checklist is already matched to your patient's age.</span></li>
+      <li><span>In <strong>Immunization Status</strong>, review the age-appropriate vaccine list and check off vaccines that are current. If any vaccines are given during this visit, use the <strong>Vaccines Administered Today</strong> form to record the vaccine name, lot number, and administration site, then click <strong>+ Add</strong>.</span></li>
+      <li><span>Complete the <strong>Nutritional Assessment</strong> — check off diet and lifestyle items that were discussed during the visit, and add any notes about dietary concerns or counseling provided.</span></li>
+      <li><span>Fill in the <strong>School &amp; Behavioral</strong> section with the patient's grade, academic performance, and any behavioral concerns noted.</span></li>
+      <li><span>Write your <strong>Assessment &amp; Plan</strong> and enter the date of the next well-child visit if applicable.</span></li>
+      <li><span>Click <strong>💾 Save Pediatric Encounter</strong> when finished.</span></li>
+    </ol>
+
+    <div class="co b">
+      <div class="ct">💡 Tip — Standard Tab Still Available</div>
+      You can switch back to the Standard Encounter tab at any time by clicking it at the top of the section. Both forms are available for pediatric patients — your instructor will tell you which one to complete.
+    </div>
+
+    <h3>Printing Your Completed Record</h3>
+    <ol class="steps">
+      <li><span>Click the <strong>🖨 Print</strong> button in the top right corner of the screen.</span></li>
+      <li><span>Your browser's print dialog will open. Change the destination to <strong>Save as PDF</strong>.</span></li>
+      <li><span>Click <strong>Save</strong>, name your file, and choose where to save it.</span></li>
+      <li><span>Submit the PDF file to your instructor as directed.</span></li>
+    </ol>
+
+    <div class="co r">
+      <div class="ct">⚠ Reminder — Print Before You Close</div>
+      Once you close or refresh the browser tab, all of your work will be gone and cannot be recovered. Make sure you have saved your PDF <strong>before</strong> closing the simulation.
+    </div>
+
+    <div class="div"></div>
+
+    <div class="sh">
+      <div class="si">❓</div>
+      <h2>Quick Reference</h2>
+      <span class="lbl">Tips</span>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-box-title">Common Questions</div>
+      <ul class="b">
+        <li><span><strong>I navigated away and my entry is gone</strong> — entries are only lost if you refresh or close the tab. Navigating between sidebar sections is safe.</span></li>
+        <li><span><strong>I made an error in a clinical note</strong> — click the ✏ Edit button on the note card to correct it without deleting and re-entering.</span></li>
+        <li><span><strong>I can't find the CPT code I need</strong> — use the Manual Entry card in Visit Charges to type in any code manually.</span></li>
+        <li><span><strong>My order needs a result entered</strong> — click ✓ Mark Done in Orders &amp; Workflow; a result box will appear before you confirm completion.</span></li>
+        <li><span><strong>The test I need isn't in the lab procedure list</strong> — use the Manual Result Entry card in Labs &amp; Procedures for any test not listed (EKG, X-ray reads, spirometry, etc.).</span></li>
+        <li><span><strong>Where do I see all my results together?</strong> — click Results in the sidebar. It collects everything from completed orders and from Labs &amp; Procedures in one place.</span></li>
+        <li><span><strong>I have a pediatric patient and the Encounter Form looks different</strong> — that is expected. The 🩺 Pediatric Encounter tab opens automatically for Ethan, Lily, and Jamal. The milestone checklists and vaccine lists are already matched to your patient's age — just work through each section.</span></li>
+        <li><span><strong>I accidentally deleted something</strong> — unfortunately, deletions cannot be undone within the session. Re-enter the information in the appropriate section.</span></li>
+      </ul>
+    </div>
+
+    <div class="co g">
+      <div class="ct">✓ You're Ready</div>
+      Open the simulation link, select your patient, and follow your instructor's task list. Take your time, refer back to your patient card as you go, and remember to print your completed record before you close the browser. Good luck!
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div>
+      <div><strong>ClinicalEMR Pro — Student Guide</strong></div>
+      <div style="margin-top:3px;font-size:11px;opacity:.7">© 2025 HealthSim Hub. All rights reserved. This material may not be reproduced, distributed, or used without written permission from the author.</div>
+    </div>
+    <div>Remember: Print your completed record as a PDF before closing the simulation</div>
+  </div>
+
+</div>
+</body>
+</html>
