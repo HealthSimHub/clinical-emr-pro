@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CDC Growth Charts</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #f0f4f8;
+    --panel: #ffffff;
+    --accent: #1a3a5c;
+    --accent2: #2563a8;
+    --accent3: #3b82c4;
+    --text: #1a2535;
+    --muted: #5a6a7e;
+    --border: #c8d6e5;
+    --tag: #e8f0f9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--accent);
+    color: white;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 3px solid #0f2540;
+  }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+
+  header p {
+    font-size: 0.8rem;
+    opacity: 0.75;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  .icon { font-size: 2rem; }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 24px;
+  }
+
+  .controls {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .field select, .field input {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    background: var(--bg);
+    color: var(--text);
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+  }
+
+  .field select:focus, .field input:focus {
+    outline: none;
+    border-color: var(--accent2);
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  button {
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--accent2);
+    color: white;
+  }
+
+  .btn-primary:hover { background: #1a4f8a; transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: var(--tag);
+    color: var(--accent2);
+    border: 1.5px solid #a8c4e0;
+  }
+
+  .btn-secondary:hover { background: #d0e4f5; }
+
+  .tab-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    padding: 8px 20px;
+    border-radius: 999px;
+    border: 1.5px solid var(--border);
+    background: var(--panel);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    background: var(--accent2);
+    color: white;
+    border-color: var(--accent2);
+  }
+
+  .tab:hover:not(.active) { border-color: var(--accent2); color: var(--accent2); }
+
+  .chart-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .chart-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  .chart-subtitle {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-top: 3px;
+  }
+
+  .legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .legend-line {
+    width: 24px;
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  canvas { max-height: 450px; }
+
+  .data-table {
+    margin-top: 24px;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+
+  .data-table h3 {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 12px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--bg);
+    border-radius: 4px;
+    color: var(--muted);
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  .pct-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+  }
+
+  .pct-low { background: #fef3cd; color: #856404; }
+  .pct-normal { background: #dbeafe; color: #1e40af; }
+  .pct-high { background: #fde8e8; color: #8b1a1a; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .empty-state .big { font-size: 3rem; margin-bottom: 12px; }
+  .empty-state p { font-size: 0.9rem; }
+
+  .plot-entry-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 10px;
+    align-items: flex-end;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .entry-section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+
+  .entry-section h2 {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 14px;
+  }
+
+  .remove-btn {
+    background: #fde8e8;
+    color: #8b1a1a;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    align-self: flex-end;
+    height: 36px;
+  }
+
+  .remove-btn:hover { background: #f5c6c6; }
+
+  @media (max-width: 600px) {
+    .controls { grid-template-columns: 1fr 1fr; }
+    .plot-entry-row { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ── Patient info bar ── */
+  .patient-bar {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+
+  .print-btn {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .print-btn:hover { background: #0f2540; transform: translateY(-1px); }
+
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+  /* ── Print styles ── */
+  @media print {
+    @page { size: letter portrait; margin: 0.6in 0.5in; }
+
+    body { background: white !important; font-size: 11pt; }
+
+    header { 
+      background: #1a3a5c !important; 
+      -webkit-print-color-adjust: exact; 
+      print-color-adjust: exact;
+      padding: 12px 20px;
+    }
+
+    .no-print { display: none !important; }
+
+    .container { padding: 0; max-width: 100%; }
+
+    .print-patient-block {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      border: 1px solid #c8d6e5;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      background: #f0f4f8 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .print-patient-block .pf { font-size: 9pt; }
+    .print-patient-block .pf span { display: block; font-size: 7.5pt; color: #5a6a7e; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+
+    .chart-card {
+      box-shadow: none !important;
+      border: 1px solid #c8d6e5 !important;
+      padding: 14px !important;
+    }
+
+    canvas { max-height: 380px !important; }
+
+    .tab-row, .entry-section, .patient-bar { display: none !important; }
+
+    .data-table { display: block !important; }
+
+    .pct-badge {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .pct-low { background: #fef3cd !important; color: #856404 !important; }
+    .pct-normal { background: #dbeafe !important; color: #1e40af !important; }
+    .pct-high { background: #fde8e8 !important; color: #8b1a1a !important; }
+
+    .print-footer {
+      display: block !important;
+      margin-top: 18px;
+      font-size: 8pt;
+      color: #5a6a7e;
+      border-top: 1px solid #c8d6e5;
+      padding-top: 8px;
+      text-align: center;
+    }
+  }
+
+  .print-patient-block { display: none; }
+  .print-footer { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="icon">📈</div>
+  <div>
+    <h1>CDC Growth Charts</h1>
+    <p>2000 CDC REFERENCE STANDARDS — INTERACTIVE CLASSROOM TOOL</p>
+  </div>
+  <div class="header-right">
+    <button class="print-btn no-print" onclick="printChart()">🖨 Print to PDF</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Print-only patient block (hidden on screen, visible on print) -->
+  <div class="print-patient-block" id="printPatientBlock">
+    <div class="pf"><span>Patient Name</span><strong id="pr-name">—</strong></div>
+    <div class="pf"><span>Date of Birth</span><strong id="pr-dob">—</strong></div>
+    <div class="pf"><span>MRN / ID</span><strong id="pr-mrn">—</strong></div>
+    <div class="pf"><span>Provider</span><strong id="pr-provider">—</strong></div>
+    <div class="pf"><span>Visit Date</span><strong id="pr-date">—</strong></div>
+    <div class="pf"><span>Chart Type</span><strong id="pr-charttype">—</strong></div>
+  </div>
+
+  <!-- Chart type / sex selector -->
+  <div class="tab-row no-print" id="chartTabs">
+    <button class="tab active" onclick="setChart('wfa')">Weight-for-Age</button>
+    <button class="tab" onclick="setChart('hfa')">Height-for-Age</button>
+    <button class="tab" onclick="setChart('bmi')">BMI-for-Age</button>
+  </div>
+
+  <div class="controls no-print">
+    <div class="field">
+      <label>Sex</label>
+      <select id="sexSel" onchange="renderChart()">
+        <option value="M">Male</option>
+        <option value="F">Female</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Age Range</label>
+      <select id="ageRange" onchange="renderChart()">
+        <option value="infant">Birth – 36 months</option>
+        <option value="child">2 – 20 years</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Student / Patient Name</label>
+      <input type="text" id="studentName" placeholder="e.g. John D." oninput="syncPrintFields()" />
+    </div>
+  </div>
+
+  <!-- Patient info for print -->
+  <div class="patient-bar no-print">
+    <div class="field">
+      <label>Date of Birth</label>
+      <input type="date" id="patDOB" oninput="syncPrintFields()" />
+    </div>
+    <div class="field">
+      <label>MRN / Student ID</label>
+      <input type="text" id="patMRN" placeholder="Optional" oninput="syncPrintFields()" />
+    </div>
+    <div class="field">
+      <label>Provider / Instructor</label>
+      <input type="text" id="patProvider" placeholder="Optional" oninput="syncPrintFields()" />
+    </div>
+    <div class="field">
+      <label>Visit / Exam Date</label>
+      <input type="date" id="patDate" oninput="syncPrintFields()" />
+    </div>
+  </div>
+
+  <!-- Data entry -->
+  <div class="entry-section">
+    <h2>Plot Student Measurements</h2>
+    <div id="entries"></div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="addEntry()">+ Add Measurement</button>
+      <button class="btn-secondary" onclick="clearAll()">Clear All</button>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title" id="chartTitle">Weight-for-Age — Male</div>
+        <div class="chart-subtitle" id="chartSubtitle">BIRTH TO 36 MONTHS · CDC 2000 PERCENTILE CURVES</div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <canvas id="growthChart"></canvas>
+
+    <div class="data-table" id="dataTable" style="display:none">
+      <h3>Plotted Measurements</h3>
+      <table id="resultTable">
+        <thead>
+          <tr>
+            <th>Age</th>
+            <th>Value</th>
+            <th>Estimated Percentile</th>
+            <th>Interpretation</th>
+          </tr>
+        </thead>
+        <tbody id="resultBody"></tbody>
+      </table>
+    </div>
+
+    <div class="print-footer">
+      CDC 2000 Growth Reference Standards &nbsp;·&nbsp; Generated by ClinicalEMR Pro Growth Chart Tool &nbsp;·&nbsp; For educational use only
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── CDC LMS Reference Data (simplified percentile curves) ──────────────────
+
+// Percentile values at key age points. These are actual CDC tabulated values.
+// Format: age (months or years), then p3, p5, p10, p25, p50, p75, p90, p95, p97
+
+const PERCENTILES = [3, 5, 10, 25, 50, 75, 90, 95, 97];
+const PCT_COLORS = [
+  '#aecfae','#7ab87a','#4ea04e','#2d7a2d','#1a5c3a','#2d7a2d','#4ea04e','#7ab87a','#aecfae'
+];
+
+// Weight-for-age MALE birth–36 months (kg) key ages in months
+const WFA_M_INFANT = {
+  ages: [0,3,6,9,12,15,18,21,24,27,30,33,36],
+  p3:  [2.5,5.1,6.4,7.2,7.8,8.4,8.8,9.2,9.6,9.9,10.2,10.5,10.8],
+  p5:  [2.6,5.3,6.6,7.4,8.1,8.6,9.1,9.5,9.9,10.2,10.5,10.8,11.1],
+  p10: [2.8,5.6,7.0,7.8,8.5,9.0,9.5,9.9,10.3,10.7,11.0,11.3,11.6],
+  p25: [3.0,6.0,7.5,8.4,9.1,9.7,10.2,10.6,11.0,11.4,11.7,12.0,12.3],
+  p50: [3.3,6.4,7.9,8.9,9.6,10.3,10.9,11.3,11.8,12.2,12.5,12.8,13.1],
+  p75: [3.6,6.9,8.4,9.4,10.2,10.9,11.5,12.0,12.4,12.8,13.2,13.5,13.8],
+  p90: [3.9,7.4,8.9,9.9,10.8,11.5,12.1,12.6,13.1,13.5,13.9,14.2,14.6],
+  p95: [4.1,7.7,9.2,10.3,11.2,11.9,12.6,13.1,13.6,14.0,14.4,14.8,15.1],
+  p97: [4.2,7.9,9.4,10.5,11.5,12.2,12.9,13.4,13.9,14.4,14.8,15.1,15.5],
+};
+
+// Weight-for-age FEMALE birth–36 months (kg)
+const WFA_F_INFANT = {
+  ages: [0,3,6,9,12,15,18,21,24,27,30,33,36],
+  p3:  [2.4,4.8,6.1,6.9,7.5,8.0,8.4,8.8,9.1,9.5,9.8,10.1,10.4],
+  p5:  [2.5,5.0,6.3,7.1,7.7,8.2,8.7,9.0,9.4,9.7,10.0,10.3,10.6],
+  p10: [2.7,5.3,6.6,7.4,8.1,8.6,9.0,9.4,9.8,10.1,10.5,10.8,11.1],
+  p25: [2.9,5.7,7.1,8.0,8.7,9.2,9.7,10.1,10.5,10.9,11.2,11.5,11.8],
+  p50: [3.2,6.2,7.6,8.6,9.4,10.0,10.5,10.9,11.3,11.7,12.0,12.4,12.7],
+  p75: [3.5,6.7,8.2,9.2,10.1,10.7,11.3,11.7,12.2,12.6,12.9,13.3,13.6],
+  p90: [3.8,7.2,8.7,9.8,10.7,11.4,12.0,12.5,13.0,13.4,13.8,14.2,14.5],
+  p95: [4.0,7.5,9.0,10.1,11.0,11.8,12.4,12.9,13.4,13.8,14.2,14.6,15.0],
+  p97: [4.1,7.6,9.2,10.4,11.3,12.0,12.7,13.2,13.7,14.1,14.5,14.9,15.3],
+};
+
+// Weight-for-age MALE 2–20 years (kg)
+const WFA_M_CHILD = {
+  ages: [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
+  p3:  [10.5,12.7,14.6,16.3,17.8,19.4,20.9,22.5,24.3,26.4,29.0,32.0,35.7,39.8,44.0,47.8,50.8,53.1,54.7],
+  p5:  [11.0,13.3,15.2,16.9,18.5,20.2,21.8,23.6,25.5,27.8,30.5,33.6,37.4,41.5,45.7,49.4,52.4,54.7,56.2],
+  p10: [11.5,13.9,15.9,17.7,19.4,21.2,22.9,24.8,26.8,29.2,32.1,35.3,39.3,43.3,47.4,51.0,54.0,56.2,57.8],
+  p25: [12.3,14.9,17.1,19.0,20.8,22.8,24.7,26.8,29.1,31.8,35.0,38.6,43.0,47.2,51.4,55.0,57.9,60.2,61.9],
+  p50: [13.4,16.2,18.4,20.5,22.5,24.7,26.9,29.3,31.9,35.0,38.7,42.9,47.8,52.4,56.8,60.5,63.5,65.8,67.5],
+  p75: [14.6,17.6,20.1,22.3,24.5,26.9,29.5,32.2,35.2,38.8,43.2,48.1,53.7,58.9,63.5,67.3,70.3,72.7,74.5],
+  p90: [15.9,19.2,21.9,24.3,26.9,29.7,32.8,36.0,39.7,43.9,49.1,55.1,61.5,67.5,72.5,76.5,79.4,81.7,83.5],
+  p95: [16.7,20.2,23.1,25.7,28.6,31.7,35.2,38.9,43.2,47.9,53.7,60.3,67.1,73.4,78.7,82.8,85.7,87.9,89.7],
+  p97: [17.2,20.8,23.9,26.7,29.7,33.1,36.8,40.8,45.3,50.4,56.5,63.5,70.5,77.0,82.4,86.5,89.4,91.6,93.4],
+};
+
+// Weight-for-age FEMALE 2–20 years (kg)
+const WFA_F_CHILD = {
+  ages: [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
+  p3:  [10.5,12.4,14.2,15.9,17.6,19.4,21.2,23.3,25.6,28.5,32.1,36.0,39.6,42.4,44.6,46.1,47.2,47.9,48.4],
+  p5:  [10.9,12.9,14.7,16.5,18.3,20.1,22.1,24.3,26.7,29.8,33.5,37.4,41.0,43.8,46.0,47.6,48.7,49.4,49.9],
+  p10: [11.4,13.5,15.5,17.3,19.2,21.1,23.2,25.5,28.1,31.3,35.2,39.2,42.8,45.6,47.8,49.4,50.5,51.2,51.7],
+  p25: [12.1,14.4,16.4,18.4,20.4,22.5,24.8,27.3,30.0,33.5,37.7,41.8,45.5,48.3,50.5,52.1,53.3,54.0,54.6],
+  p50: [13.1,15.5,17.7,19.8,22.0,24.3,26.9,29.7,32.9,36.8,41.5,46.1,50.0,52.9,55.2,56.9,58.0,58.8,59.4],
+  p75: [14.1,16.8,19.2,21.5,23.9,26.5,29.5,32.7,36.3,40.6,45.8,50.7,54.9,58.0,60.4,62.1,63.3,64.1,64.7],
+  p90: [15.3,18.4,21.1,23.6,26.4,29.4,32.9,36.8,41.0,45.9,51.6,57.0,61.5,64.8,67.3,69.0,70.2,71.0,71.7],
+  p95: [16.0,19.3,22.2,24.9,27.9,31.2,35.0,39.3,43.9,49.1,55.1,60.8,65.4,68.8,71.4,73.1,74.4,75.2,75.9],
+  p97: [16.5,20.0,23.0,25.8,28.9,32.4,36.4,41.0,45.9,51.4,57.7,63.5,68.2,71.7,74.4,76.1,77.4,78.2,78.9],
+};
+
+// Height-for-Age MALE birth–36 months (cm)
+const HFA_M_INFANT = {
+  ages: [0,3,6,9,12,15,18,21,24,27,30,33,36],
+  p3:  [46.3,57.3,63.3,68.0,71.5,74.4,77.0,79.4,81.7,83.9,86.0,88.0,89.9],
+  p5:  [46.8,57.9,64.0,68.7,72.2,75.1,77.8,80.1,82.5,84.7,86.8,88.8,90.7],
+  p10: [47.5,58.7,64.9,69.6,73.2,76.1,78.8,81.2,83.5,85.8,87.9,89.9,91.9],
+  p25: [48.7,60.1,66.4,71.1,74.8,77.8,80.5,82.9,85.3,87.6,89.8,91.8,93.8],
+  p50: [49.9,61.4,67.6,72.3,75.7,79.1,81.8,84.2,86.4,88.7,90.9,92.9,94.9],
+  p75: [51.2,62.7,68.9,73.5,77.1,80.4,83.1,85.6,87.8,90.1,92.3,94.4,96.4],
+  p90: [52.4,64.0,70.2,74.8,78.5,81.8,84.6,87.0,89.3,91.6,93.8,95.9,97.9],
+  p95: [53.1,64.7,70.9,75.5,79.2,82.5,85.3,87.8,90.1,92.4,94.6,96.7,98.7],
+  p97: [53.6,65.1,71.3,76.0,79.7,83.0,85.8,88.3,90.6,92.9,95.2,97.3,99.3],
+};
+
+// Height-for-Age FEMALE birth–36 months (cm)
+const HFA_F_INFANT = {
+  ages: [0,3,6,9,12,15,18,21,24,27,30,33,36],
+  p3:  [45.6,56.2,62.5,67.2,70.7,73.7,76.3,78.7,81.0,83.2,85.3,87.4,89.3],
+  p5:  [46.1,56.7,63.2,67.9,71.4,74.4,77.0,79.4,81.7,83.9,86.0,88.1,90.0],
+  p10: [46.8,57.5,64.0,68.7,72.2,75.2,77.8,80.3,82.6,84.8,86.9,89.0,90.9],
+  p25: [48.0,58.8,65.4,70.2,73.8,76.8,79.5,82.0,84.3,86.6,88.7,90.8,92.7],
+  p50: [49.1,60.1,66.6,71.5,75.0,78.1,80.7,83.3,85.7,88.0,90.1,92.2,94.1],
+  p75: [50.3,61.3,67.9,72.8,76.4,79.5,82.2,84.8,87.2,89.5,91.6,93.7,95.7],
+  p90: [51.4,62.5,69.2,74.0,77.7,80.9,83.7,86.3,88.7,91.1,93.3,95.4,97.4],
+  p95: [52.1,63.2,70.0,74.8,78.5,81.7,84.6,87.2,89.7,92.0,94.3,96.4,98.4],
+  p97: [52.5,63.7,70.5,75.3,79.0,82.3,85.1,87.8,90.3,92.7,94.9,97.1,99.1],
+};
+
+// Height-for-Age MALE 2–20 years (cm)
+const HFA_M_CHILD = {
+  ages: [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
+  p3:  [81.3,88.0,94.0,99.6,104.9,109.9,114.6,119.2,123.5,127.8,131.9,136.5,141.8,148.0,154.1,159.0,162.7,164.9,166.1],
+  p5:  [82.5,89.3,95.3,100.9,106.2,111.2,116.0,120.5,124.9,129.2,133.3,138.1,143.5,149.8,155.8,160.7,164.3,166.5,167.7],
+  p10: [84.0,90.9,97.0,102.7,108.0,113.1,117.9,122.5,126.9,131.2,135.5,140.4,145.8,152.0,157.9,162.7,166.2,168.4,169.6],
+  p25: [86.4,93.5,99.7,105.5,110.9,116.1,121.0,125.7,130.1,134.5,138.9,143.9,149.4,155.6,161.4,166.0,169.3,171.4,172.6],
+  p50: [88.8,96.1,102.4,108.4,113.9,119.2,124.2,128.9,133.4,137.9,142.5,147.5,153.2,159.4,164.9,169.3,172.4,174.3,175.4],
+  p75: [91.2,98.7,105.1,111.2,116.8,122.2,127.4,132.1,136.7,141.4,146.1,151.1,156.9,163.1,168.4,172.5,175.5,177.3,178.3],
+  p90: [93.4,101.0,107.6,113.9,119.6,125.2,130.5,135.4,140.1,144.8,149.7,154.7,160.6,166.7,171.9,175.9,178.7,180.5,181.4],
+  p95: [94.5,102.2,108.9,115.3,121.1,126.8,132.2,137.2,141.9,146.8,151.7,156.9,162.8,169.0,174.1,178.0,180.7,182.5,183.4],
+  p97: [95.3,103.1,109.9,116.3,122.2,127.9,133.4,138.4,143.2,148.1,153.2,158.4,164.4,170.6,175.7,179.5,182.2,184.0,184.9],
+};
+
+// Height-for-Age FEMALE 2–20 years (cm)
+const HFA_F_CHILD = {
+  ages: [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
+  p3:  [80.3,87.2,93.4,98.9,104.1,109.2,114.1,118.9,123.3,128.0,133.2,138.1,141.6,143.9,145.6,146.9,148.0,148.8,149.5],
+  p5:  [81.7,88.6,94.9,100.5,105.7,110.8,115.7,120.5,125.1,129.7,134.9,139.8,143.2,145.5,147.3,148.6,149.7,150.5,151.2],
+  p10: [83.4,90.4,96.7,102.3,107.6,112.7,117.6,122.5,127.1,131.8,137.0,141.9,145.3,147.6,149.4,150.7,151.8,152.6,153.3],
+  p25: [85.9,93.0,99.4,105.1,110.4,115.6,120.5,125.4,130.1,134.9,140.2,145.0,148.3,150.7,152.5,153.8,154.9,155.7,156.4],
+  p50: [88.3,95.5,101.9,107.9,113.2,118.4,123.4,128.3,133.0,138.1,143.5,148.1,151.5,153.9,155.7,157.0,158.1,158.9,159.6],
+  p75: [90.7,98.0,104.5,110.6,116.0,121.3,126.3,131.3,136.1,141.3,146.7,151.2,154.6,157.0,158.8,160.1,161.2,162.0,162.7],
+  p90: [92.9,100.4,107.0,113.2,118.7,124.1,129.2,134.3,139.2,144.4,149.9,154.3,157.7,160.2,162.0,163.3,164.4,165.2,165.9],
+  p95: [94.2,101.8,108.5,114.8,120.3,125.8,131.0,136.1,141.1,146.4,151.9,156.3,159.7,162.2,164.0,165.3,166.4,167.2,167.9],
+  p97: [95.0,102.7,109.5,115.9,121.4,126.9,132.2,137.3,142.4,147.7,153.2,157.6,161.0,163.5,165.4,166.7,167.8,168.6,169.3],
+};
+
+// BMI-for-Age MALE 2–20 years
+const BMI_M_CHILD = {
+  ages: [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
+  p3:  [14.7,13.9,13.4,13.1,12.9,12.9,13.0,13.1,13.4,13.7,14.2,14.7,15.3,16.0,16.6,17.3,17.8,18.3,18.6],
+  p5:  [14.9,14.2,13.7,13.4,13.2,13.2,13.3,13.5,13.7,14.1,14.6,15.1,15.7,16.4,17.1,17.7,18.2,18.7,19.0],
+  p10: [15.2,14.5,14.1,13.8,13.6,13.6,13.7,13.9,14.2,14.6,15.1,15.6,16.2,16.9,17.6,18.2,18.7,19.2,19.5],
+  p25: [15.8,15.1,14.7,14.4,14.2,14.3,14.5,14.7,15.1,15.5,16.1,16.6,17.2,17.9,18.6,19.2,19.7,20.2,20.5],
+  p50: [16.5,15.9,15.4,15.2,15.1,15.2,15.5,15.9,16.3,16.9,17.5,18.1,18.8,19.5,20.1,20.7,21.2,21.7,22.0],
+  p75: [17.3,16.7,16.4,16.3,16.3,16.6,17.1,17.6,18.3,19.0,19.7,20.4,21.1,21.8,22.4,22.9,23.4,23.8,24.1],
+  p90: [18.2,17.7,17.4,17.4,17.7,18.1,18.8,19.5,20.3,21.2,22.1,22.9,23.7,24.4,25.0,25.5,26.0,26.4,26.8],
+  p95: [18.9,18.4,18.2,18.3,18.6,19.2,19.9,20.8,21.7,22.7,23.7,24.5,25.3,26.0,26.6,27.2,27.6,28.0,28.4],
+  p97: [19.3,18.9,18.8,18.9,19.3,19.9,20.7,21.6,22.6,23.7,24.7,25.6,26.4,27.1,27.7,28.2,28.7,29.1,29.5],
+};
+
+// BMI-for-Age FEMALE 2–20 years
+const BMI_F_CHILD = {
+  ages: [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
+  p3:  [14.5,13.7,13.3,13.0,12.8,12.7,12.7,12.9,13.1,13.4,13.8,14.3,14.8,15.2,15.5,15.8,16.0,16.1,16.2],
+  p5:  [14.8,14.0,13.5,13.2,13.1,13.0,13.1,13.2,13.5,13.9,14.3,14.8,15.3,15.7,16.0,16.3,16.5,16.6,16.7],
+  p10: [15.1,14.3,13.9,13.6,13.5,13.5,13.5,13.7,14.0,14.4,14.9,15.4,15.9,16.3,16.7,17.0,17.2,17.3,17.4],
+  p25: [15.8,15.0,14.5,14.3,14.2,14.3,14.4,14.6,14.9,15.4,15.9,16.5,17.1,17.5,17.9,18.2,18.4,18.6,18.7],
+  p50: [16.5,15.7,15.3,15.1,15.1,15.2,15.5,15.8,16.2,16.7,17.3,17.9,18.5,18.9,19.3,19.6,19.8,20.0,20.1],
+  p75: [17.3,16.5,16.1,16.0,16.1,16.4,16.8,17.3,17.8,18.5,19.2,19.8,20.5,21.0,21.4,21.7,22.0,22.2,22.4],
+  p90: [18.3,17.5,17.2,17.2,17.5,17.9,18.5,19.2,19.9,20.7,21.5,22.2,22.9,23.5,24.0,24.3,24.6,24.9,25.1],
+  p95: [18.9,18.1,17.9,18.0,18.4,18.9,19.6,20.4,21.2,22.1,23.0,23.7,24.4,25.0,25.5,25.9,26.2,26.5,26.8],
+  p97: [19.4,18.7,18.5,18.6,19.1,19.6,20.4,21.3,22.2,23.1,24.0,24.8,25.5,26.1,26.6,27.0,27.4,27.7,28.0],
+};
+
+// ── State ─────────────────────────────────────────────────────────────────
+let chartType = 'wfa';
+let myChart = null;
+let entries = [];
+let entryId = 0;
+
+function syncPrintFields() {
+  const name = document.getElementById('studentName').value || '—';
+  const dob = document.getElementById('patDOB').value || '—';
+  const mrn = document.getElementById('patMRN').value || '—';
+  const provider = document.getElementById('patProvider').value || '—';
+  const date = document.getElementById('patDate').value || '—';
+  const sex = document.getElementById('sexSel').value === 'M' ? 'Male' : 'Female';
+  const typeLabel = { wfa: 'Weight-for-Age', hfa: 'Height/Length-for-Age', bmi: 'BMI-for-Age' }[chartType];
+  const range = document.getElementById('ageRange').value === 'infant' ? 'Birth–36 mo' : '2–20 yr';
+
+  document.getElementById('pr-name').textContent = name;
+  document.getElementById('pr-dob').textContent = dob;
+  document.getElementById('pr-mrn').textContent = mrn;
+  document.getElementById('pr-provider').textContent = provider;
+  document.getElementById('pr-date').textContent = date;
+  document.getElementById('pr-charttype').textContent = `${typeLabel} · ${sex} · ${range}`;
+}
+
+function printChart() {
+  // Make sure data table is visible for print even if no points yet
+  const dt = document.getElementById('dataTable');
+  const wasHidden = dt.style.display === 'none';
+  if (wasHidden && document.getElementById('resultBody').innerHTML === '') {
+    dt.style.display = '';
+    document.getElementById('resultBody').innerHTML = '<tr><td colspan="4" style="color:#5a6a7e;font-style:italic;padding:12px">No measurements plotted.</td></tr>';
+  }
+  syncPrintFields();
+  window.print();
+  // Restore
+  if (wasHidden) { dt.style.display = 'none'; document.getElementById('resultBody').innerHTML = ''; }
+}
+
+function setChart(type) {
+  chartType = type;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  syncPrintFields();
+  renderChart();
+}
+
+function getRefData() {
+  const sex = document.getElementById('sexSel').value;
+  const range = document.getElementById('ageRange').value;
+  if (chartType === 'wfa') return sex === 'M' ? (range === 'infant' ? WFA_M_INFANT : WFA_M_CHILD) : (range === 'infant' ? WFA_F_INFANT : WFA_F_CHILD);
+  if (chartType === 'hfa') return sex === 'M' ? (range === 'infant' ? HFA_M_INFANT : HFA_M_CHILD) : (range === 'infant' ? HFA_F_INFANT : HFA_F_CHILD);
+  if (chartType === 'bmi') {
+    document.getElementById('ageRange').value = 'child';
+    return sex === 'M' ? BMI_M_CHILD : BMI_F_CHILD;
+  }
+}
+
+function getChartLabel() {
+  const sex = document.getElementById('sexSel').value === 'M' ? 'Male' : 'Female';
+  const range = document.getElementById('ageRange').value === 'infant' ? 'Birth to 36 Months' : '2–20 Years';
+  const typeLabel = { wfa: 'Weight-for-Age', hfa: 'Height/Length-for-Age', bmi: 'BMI-for-Age' }[chartType];
+  const unit = { wfa: '(kg)', hfa: '(cm)', bmi: '(kg/m²)' }[chartType];
+  return { title: `${typeLabel} — ${sex}`, sub: `${range.toUpperCase()} · CDC 2000 PERCENTILE CURVES · ${unit}`, unit };
+}
+
+function addEntry() {
+  const id = ++entryId;
+  const range = document.getElementById('ageRange').value;
+  const unit = { wfa: 'kg', hfa: 'cm', bmi: 'kg/m²' }[chartType];
+  const ageUnit = range === 'infant' ? 'months' : 'years';
+  entries.push({ id });
+
+  const div = document.createElement('div');
+  div.className = 'plot-entry-row';
+  div.id = `entry-${id}`;
+  div.innerHTML = `
+    <div class="field">
+      <label>Age (${ageUnit})</label>
+      <input type="number" id="age-${id}" min="0" step="0.5" placeholder="${range === 'infant' ? '0–36' : '2–20'}" />
+    </div>
+    <div class="field">
+      <label>Value (${unit})</label>
+      <input type="number" id="val-${id}" step="0.1" placeholder="Enter ${unit}" />
+    </div>
+    <button class="remove-btn" onclick="removeEntry(${id})">✕</button>
+  `;
+  document.getElementById('entries').appendChild(div);
+}
+
+function removeEntry(id) {
+  entries = entries.filter(e => e.id !== id);
+  document.getElementById(`entry-${id}`).remove();
+  renderChart();
+}
+
+function clearAll() {
+  entries = [];
+  document.getElementById('entries').innerHTML = '';
+  renderChart();
+}
+
+function getPlottedPoints() {
+  return entries.map(e => {
+    const age = parseFloat(document.getElementById(`age-${e.id}`)?.value);
+    const val = parseFloat(document.getElementById(`val-${e.id}`)?.value);
+    return (isNaN(age) || isNaN(val)) ? null : { age, val };
+  }).filter(Boolean);
+}
+
+function estimatePercentile(age, val, ref) {
+  // Find closest age in ref
+  let minDiff = Infinity, idx = 0;
+  ref.ages.forEach((a, i) => { const d = Math.abs(a - age); if (d < minDiff) { minDiff = d; idx = i; } });
+  const pcts = [ref.p3, ref.p5, ref.p10, ref.p25, ref.p50, ref.p75, ref.p90, ref.p95, ref.p97];
+  const vals = pcts.map(p => p[idx]);
+  const pctNums = [3, 5, 10, 25, 50, 75, 90, 95, 97];
+  for (let i = 0; i < vals.length - 1; i++) {
+    if (val <= vals[i]) return i === 0 ? '<3rd' : `~${pctNums[i]}th`;
+    if (val >= vals[i] && val <= vals[i+1]) {
+      const frac = (val - vals[i]) / (vals[i+1] - vals[i]);
+      const p = Math.round(pctNums[i] + frac * (pctNums[i+1] - pctNums[i]));
+      return `~${p}th`;
+    }
+  }
+  return '>97th';
+}
+
+function getPctClass(pctStr) {
+  if (pctStr.includes('<3') || pctStr.includes('<5') || (pctStr.includes('~') && parseInt(pctStr) < 5)) return 'pct-low';
+  if (pctStr.includes('>95') || pctStr.includes('>97') || (pctStr.includes('~') && parseInt(pctStr) > 85)) return 'pct-high';
+  return 'pct-normal';
+}
+
+function getInterpretation(pctStr, type) {
+  const n = parseInt(pctStr.replace(/[^0-9]/g, '')) || 0;
+  const low = pctStr.startsWith('<');
+  const high = pctStr.startsWith('>');
+  if (type === 'bmi') {
+    if (low || n < 5) return 'Underweight';
+    if (n < 85) return 'Healthy Weight';
+    if (n < 95) return 'Overweight';
+    return 'Obese';
+  }
+  if (low || n < 5) return 'Below normal range';
+  if (high || n > 95) return 'Above normal range';
+  return 'Within normal range';
+}
+
+function renderChart() {
+  if (chartType === 'bmi') {
+    document.getElementById('ageRange').value = 'child';
+    document.getElementById('ageRange').disabled = true;
+  } else {
+    document.getElementById('ageRange').disabled = false;
+  }
+
+  const ref = getRefData();
+  const { title, sub, unit } = getChartLabel();
+  document.getElementById('chartTitle').textContent = title;
+  document.getElementById('chartSubtitle').textContent = sub;
+
+  const pctKeys = ['p3','p5','p10','p25','p50','p75','p90','p95','p97'];
+  const pctLabels = ['3rd','5th','10th','25th','50th','75th','90th','95th','97th'];
+  const baseColors = ['#bdd5f0','#93bbea','#6aa0e0','#3b7fd4','#1a3a5c','#3b7fd4','#6aa0e0','#93bbea','#bdd5f0'];
+
+  const datasets = pctKeys.map((k, i) => ({
+    label: pctLabels[i],
+    data: ref.ages.map((a, j) => ({ x: a, y: ref[k][j] })),
+    borderColor: baseColors[i],
+    backgroundColor: 'transparent',
+    borderWidth: k === 'p50' ? 2.5 : 1.5,
+    borderDash: k === 'p50' ? [] : (i < 4 ? [4,3] : [4,3]),
+    pointRadius: 0,
+    tension: 0.4,
+  }));
+
+  // Student points
+  const studentName = document.getElementById('studentName').value || 'Student';
+  const points = getPlottedPoints();
+  if (points.length > 0) {
+    datasets.push({
+      label: studentName,
+      data: points.map(p => ({ x: p.age, y: p.val })),
+      borderColor: '#e8623a',
+      backgroundColor: '#e8623a',
+      borderWidth: 2,
+      pointRadius: 7,
+      pointHoverRadius: 9,
+      pointStyle: 'circle',
+      showLine: points.length > 1,
+      tension: 0.3,
+      order: -1,
+    });
+  }
+
+  const ageLabel = document.getElementById('ageRange').value === 'infant' ? 'Age (months)' : 'Age (years)';
+  const yLabel = { wfa: 'Weight (kg)', hfa: 'Height/Length (cm)', bmi: 'BMI (kg/m²)' }[chartType];
+
+  if (myChart) myChart.destroy();
+  myChart = new Chart(document.getElementById('growthChart'), {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: ctx => `Age: ${ctx[0].parsed.x} ${document.getElementById('ageRange').value === 'infant' ? 'mo' : 'yr'}`,
+            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} ${unit}`,
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'linear',
+          title: { display: true, text: ageLabel, font: { family: 'DM Mono', size: 11 }, color: '#6b6b6b' },
+          grid: { color: '#f0ece5' },
+          ticks: { font: { family: 'DM Mono', size: 10 } }
+        },
+        y: {
+          title: { display: true, text: yLabel, font: { family: 'DM Mono', size: 11 }, color: '#6b6b6b' },
+          grid: { color: '#f0ece5' },
+          ticks: { font: { family: 'DM Mono', size: 10 } }
+        }
+      }
+    }
+  });
+
+  // Legend
+  const legendEl = document.getElementById('legend');
+  legendEl.innerHTML = `
+    ${pctLabels.filter((_,i) => [2,4,6,7].includes(i)).map((l,ii) => {
+      const realI = [2,4,6,7][ii];
+      return `<div class="legend-item"><div class="legend-line" style="background:${baseColors[realI]}"></div>${l}</div>`;
+    }).join('')}
+    ${points.length ? `<div class="legend-item"><div class="legend-line" style="background:#e8623a;height:3px;width:24px;border-radius:2px"></div>${studentName}</div>` : ''}
+  `;
+
+  // Table
+  if (points.length > 0) {
+    document.getElementById('dataTable').style.display = '';
+    const body = document.getElementById('resultBody');
+    const ageU = document.getElementById('ageRange').value === 'infant' ? 'mo' : 'yr';
+    const valU = { wfa: 'kg', hfa: 'cm', bmi: 'kg/m²' }[chartType];
+    body.innerHTML = points.map(p => {
+      const pct = estimatePercentile(p.age, p.val, ref);
+      const cls = getPctClass(pct);
+      const interp = getInterpretation(pct, chartType);
+      return `<tr>
+        <td><strong>${p.age}</strong> ${ageU}</td>
+        <td>${p.val.toFixed(1)} ${valU}</td>
+        <td><span class="pct-badge ${cls}">${pct} percentile</span></td>
+        <td>${interp}</td>
+      </tr>`;
+    }).join('');
+  } else {
+    document.getElementById('dataTable').style.display = 'none';
+  }
+}
+
+// Auto re-render on input changes
+document.addEventListener('input', e => {
+  if (['age-','val-'].some(p => e.target.id?.startsWith(p))) renderChart();
+});
+
+// Init
+renderChart();
+syncPrintFields();
+</script>
+</body>
+</html>
